@@ -48,27 +48,22 @@
     <Analyzer Include="/Applications/Unity/Hub/Editor/6000.4.8f1/Unity.app/Contents/Resources/BuildPipeline/Unity.SourceGenerators/Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets/Scripts/NPCController.cs" />
     <Compile Include="Assets/Scripts/SipMechanic.cs" />
     <Compile Include="Assets/Scripts/ScoreManager.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/CameraShake.cs" />
     <Compile Include="Assets/Scripts/PlayerController.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/PeeTarget.cs" />
     <Compile Include="Assets/Scripts/UIManager.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/PlayerController.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/ScoreManager.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/PeeController.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/BottlePickup.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/PeeParticle.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/DormTrigger.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/NPCDetection.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/GameBootstrap.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/DrunkEffectManager.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/UIManager.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/BottleSystem.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/DoubleVisionGhost.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/PrimitiveFactory.cs" />
+    <Compile Include="Assets/Scripts/DormTransition.cs" />
+    <Compile Include="Assets/Scripts/EndScreen.cs" />
+    <Compile Include="Assets/Scripts/PeeMinigame.cs" />
+    <Compile Include="Assets/Scripts/DrunkEffectManager.cs" />
+    <Compile Include="Assets/Scripts/PeeTargetTag.cs" />
+    <Compile Include="Assets/Scripts/PeeParticle.cs" />
+    <Compile Include="Assets/Scripts/NpcAlert.cs" />
+    <Compile Include="Assets/Scripts/GameSession.cs" />
     <Compile Include="Assets/Scripts/GameManager.cs" />
-    <Compile Include="Assets/OneMoreSip/Scripts/GameManager.cs" />
+    <Compile Include="Assets/Scripts/CameraFollow.cs" />
+    <Compile Include="Assets/Scripts/DoubleVisionGhost.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

@@ -1,0 +1,468 @@
+fileFormatVersion: 2
+guid: 4676c7d91779f41918a9d96378bd7be7
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -915953986765994443
+    second: drinkingidle_0
+  - first:
+      213: -6205864593957498995
+    second: drinkingidle_1
+  - first:
+      213: -7734842392649302868
+    second: drinkingidle_2
+  - first:
+      213: 7079284879650690921
+    second: drinkingidle_3
+  - first:
+      213: 106579072622858622
+    second: drinkingidle_4
+  - first:
+      213: -4462290745167641102
+    second: drinkingidle_5
+  - first:
+      213: -8641582037072678598
+    second: drinkingidle_6
+  - first:
+      213: 1557980770136635567
+    second: drinkingidle_7
+  - first:
+      213: 3862945873669907317
+    second: drinkingidle_8
+  - first:
+      213: -4994206249358101600
+    second: drinkingidle_9
+  - first:
+      213: -2631975012081184652
+    second: drinkingidle_10
+  - first:
+      213: -6335354703673437657
+    second: drinkingidle_11
+  - first:
+      213: -1232858356416556318
+    second: drinkingidle_12
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: drinkingidle_0
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 652
+        width: 170
+        height: 316
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 536c534b3b0e943f0800000000000000
+      internalID: -915953986765994443
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: drinkingidle_1
+      rect:
+        serializedVersion: 2
+        x: 285
+        y: 647
+        width: 193
+        height: 316
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d8f4df8280750e9a0800000000000000
+      internalID: -6205864593957498995
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: drinkingidle_2
+      rect:
+        serializedVersion: 2
+        x: 509
+        y: 649
+        width: 213
+        height: 311
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cac718823d158a490800000000000000
+      internalID: -7734842392649302868
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: drinkingidle_3
+      rect:
+        serializedVersion: 2
+        x: 756
+        y: 646
+        width: 204
+        height: 311
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9679f53271cae3260800000000000000
+      internalID: 7079284879650690921
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: drinkingidle_4
+      rect:
+        serializedVersion: 2
+        x: 1003
+        y: 643
+        width: 191
+        height: 317
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e711d241a15aa7100800000000000000
+      internalID: 106579072622858622
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: drinkingidle_5
+      rect:
+        serializedVersion: 2
+        x: 1254
+        y: 648
+        width: 190
+        height: 313
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2f505c1a532c212c0800000000000000
+      internalID: -4462290745167641102
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: drinkingidle_6
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 6
+        width: 242
+        height: 430
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a31f2ee1ceee21880800000000000000
+      internalID: -8641582037072678598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: drinkingidle_7
+      rect:
+        serializedVersion: 2
+        x: 279
+        y: 139
+        width: 189
+        height: 366
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fa832e2814f0f9510800000000000000
+      internalID: 1557980770136635567
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: drinkingidle_8
+      rect:
+        serializedVersion: 2
+        x: 478
+        y: 1
+        width: 195
+        height: 451
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 573e7aa2ec0fb9530800000000000000
+      internalID: 3862945873669907317
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: drinkingidle_9
+      rect:
+        serializedVersion: 2
+        x: 679
+        y: 138
+        width: 193
+        height: 296
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a379fb60e301bab0800000000000000
+      internalID: -4994206249358101600
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: drinkingidle_10
+      rect:
+        serializedVersion: 2
+        x: 878
+        y: 1
+        width: 187
+        height: 437
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 470523bdba8597bd0800000000000000
+      internalID: -2631975012081184652
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: drinkingidle_11
+      rect:
+        serializedVersion: 2
+        x: 1064
+        y: 1
+        width: 190
+        height: 433
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 722d171967c4418a0800000000000000
+      internalID: -6335354703673437657
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: drinkingidle_12
+      rect:
+        serializedVersion: 2
+        x: 1261
+        y: 142
+        width: 263
+        height: 390
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2e25b675bd104eee0800000000000000
+      internalID: -1232858356416556318
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 27ef136583d684034bc0b545417ec8c2
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      drinkingidle_0: -915953986765994443
+      drinkingidle_1: -6205864593957498995
+      drinkingidle_10: -2631975012081184652
+      drinkingidle_11: -6335354703673437657
+      drinkingidle_12: -1232858356416556318
+      drinkingidle_2: -7734842392649302868
+      drinkingidle_3: 7079284879650690921
+      drinkingidle_4: 106579072622858622
+      drinkingidle_5: -4462290745167641102
+      drinkingidle_6: -8641582037072678598
+      drinkingidle_7: 1557980770136635567
+      drinkingidle_8: 3862945873669907317
+      drinkingidle_9: -4994206249358101600
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
