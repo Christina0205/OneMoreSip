@@ -1379,7 +1379,7 @@ MonoBehaviour:
   shakeAmplitude: 0.15
   windowSize: 25
   countdownSeconds: 0
-  autoStartForTesting: 1
+  autoStartForTesting: 0
   debugDrunk: 50
 --- !u!4 &981049579
 Transform:
