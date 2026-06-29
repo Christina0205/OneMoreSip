@@ -95,10 +95,26 @@ public class PlayerController : MonoBehaviour
     private readonly List<Transform> _bottles = new List<Transform>();
 
     // ---- Top-left HUD ----
-    private Text _hudText;
+    private Text _statsText;   // top-right: objective + drunk level
+
+    // Remember the very first start pose so Restart always returns the player there.
+    private static Vector3? _recordedStartPos;
+    private static Vector3 _recordedStartScale = Vector3.one;
 
     private void Awake()
     {
+        // First run records the genuine start; later (re)loads snap back to it.
+        if (_recordedStartPos == null)
+        {
+            _recordedStartPos = transform.position;
+            _recordedStartScale = transform.localScale;
+        }
+        else
+        {
+            transform.position = _recordedStartPos.Value;
+            transform.localScale = _recordedStartScale;
+        }
+
         _baseScaleX = Mathf.Abs(transform.localScale.x);
         if (_baseScaleX == 0f) _baseScaleX = 1f;
 
@@ -179,6 +195,7 @@ public class PlayerController : MonoBehaviour
         {
             _isDrinking = true;                      // begin a fresh drink
             _drinkRemaining = drinkDuration * DrinkDurationMultiplier; // Effect 5 doubles it
+            AudioManager.Instance?.PlayDrinking();
         }
 
         // --- pick + play the right animation state ---
@@ -198,6 +215,7 @@ public class PlayerController : MonoBehaviour
 
         _enteredDorm = true;
         Debug.Log($"[OneMoreSip] Reached dorm. Drunk Level = {DrunkLevel}.");
+        AudioManager.Instance?.PlayDormDoor();
 
         if (DrunkLevel >= dormMinDrunk)
         {
@@ -291,31 +309,43 @@ public class PlayerController : MonoBehaviour
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvasGo.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
 
-        var textGo = new GameObject("HUDText");
-        textGo.transform.SetParent(canvasGo.transform, false);
-        _hudText = textGo.AddComponent<Text>();
-        _hudText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
-                        ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
-        _hudText.fontSize = 22;
-        _hudText.alignment = TextAnchor.UpperLeft;
-        _hudText.color = Color.white;
-        _hudText.horizontalOverflow = HorizontalWrapMode.Overflow;
-        _hudText.verticalOverflow = VerticalWrapMode.Overflow;
+        // Top-left: controls (static, one per line).
+        var controls = MakeHudText(canvasGo.transform, new Vector2(0f, 1f), TextAnchor.UpperLeft,
+                                   new Vector2(16f, -16f));
+        controls.text = "A/D: Move\nE: Drink\nShift: Hide Beer bottle";
 
-        var rt = _hudText.rectTransform;
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 1f); // top-left
-        rt.anchoredPosition = new Vector2(16f, -16f);
-        rt.sizeDelta = new Vector2(600f, 120f);
+        // Top-right: objective + drunk level / bottle / effect (dynamic).
+        _statsText = MakeHudText(canvasGo.transform, new Vector2(1f, 1f), TextAnchor.UpperRight,
+                                 new Vector2(-16f, -16f));
+    }
+
+    private Text MakeHudText(Transform parent, Vector2 anchorPivot, TextAnchor align, Vector2 pos)
+    {
+        var go = new GameObject("HUDText");
+        go.transform.SetParent(parent, false);
+        var t = go.AddComponent<Text>();
+        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf")
+                 ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+        t.fontSize = 22;
+        t.alignment = align;
+        t.color = Color.white;
+        t.horizontalOverflow = HorizontalWrapMode.Overflow;
+        t.verticalOverflow = VerticalWrapMode.Overflow;
+        var rt = t.rectTransform;
+        rt.anchorMin = rt.anchorMax = rt.pivot = anchorPivot;
+        rt.anchoredPosition = pos;
+        rt.sizeDelta = new Vector2(700f, 160f);
+        return t;
     }
 
     private void UpdateHud()
     {
-        if (_hudText == null) return;
+        if (_statsText == null) return;
 
-        string s = $"Drunk Level: {DrunkLevel}";
+        string s = "Get drunk and go back to dorm 108!\nBe Careful about Staffs!";
+        s += $"\nDrunk Level: {DrunkLevel}";
         if (Holding) s += $"\nBottle: {BottleAmount} / {BottleMax}";
         if (_isDrinking) s += $"\nDrinking... {_drinkRemaining:0.0}s  (+5 Drunk on finish)";
-        if (CurrentDrunkEffect != "None") s += $"\nDrunk Effect: {CurrentDrunkEffect}";
-        _hudText.text = s;
+        _statsText.text = s;
     }
 }

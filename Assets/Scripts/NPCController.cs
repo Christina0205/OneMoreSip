@@ -27,9 +27,6 @@ public class NPCController : MonoBehaviour
     [Header("Detection")]
     [Tooltip("How close (world units) the player must be to get caught.")]
     [SerializeField] private float detectRange = 2f;
-    [TextArea]
-    [SerializeField] private string caughtMessage =
-        "You are caught by a staff member!\nYour parents are on the way!";
 
     private Animator _animator;
     private PlayerController _player;
@@ -40,7 +37,6 @@ public class NPCController : MonoBehaviour
     private enum Phase { WalkRight, IdleA, WalkLeft, IdleB }
     private Phase _phase;
     private float _timer;
-    private float _lastAlert = -10f;
 
     private void Awake()
     {
@@ -110,6 +106,7 @@ public class NPCController : MonoBehaviour
     // -------------------------------------------------------------------
     private void Detect()
     {
+        if (Time.timeScale == 0f) return;   // already on the lose screen
         if (_player == null) return;
         if (Vector2.Distance(transform.position, _player.transform.position) > detectRange) return;
 
@@ -121,10 +118,10 @@ public class NPCController : MonoBehaviour
         if (!facingPlayer) return;   // back turned -> no detection, even if drinking/holding
 
         bool caught = _player.IsDrinking || _player.BottleExposed;
-        if (caught && Time.time - _lastAlert > 2f)   // don't spam the message
+        if (caught)
         {
-            _lastAlert = Time.time;
-            NpcAlert.Show(caughtMessage);
+            AudioManager.Instance?.PlayGameOver();
+            EndScreen.Show("Your parents are on the way!", Color.red);   // lose screen + restart
         }
     }
 

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
@@ -36,12 +37,28 @@ public class PeeMinigame : MonoBehaviour
     [Tooltip("Tick this if the targets are to the LEFT of the player.")]
     [SerializeField] private bool aimFaceLeft = false;
 
+    [Header("Player")]
+    [SerializeField] private string playerName = "PlayerPee";
+
     [Header("Droplets")]
-    [SerializeField] private float fireRate = 20f;        // original prototype value
-    [SerializeField] private float particleSpeed = 14f;   // original prototype value
-    [SerializeField] private float gravityScale = 0.7f;   // original prototype value
+    [SerializeField] private float fireRate = 20f;
+    [Tooltip("Pee power randomly drifts between these (changes how far it reaches).")]
+    [SerializeField] private float powerMin = 10f;
+    [SerializeField] private float powerMax = 20f;
+    [SerializeField] private float powerChangeSpeed = 0.4f; // how fast the power wanders
+    [SerializeField] private float gravityScale = 0.7f;
     [SerializeField] private float particleLifetime = 3f;
-    [SerializeField] private float dropletSize = 0.1f;    // kept smaller per your earlier request
+    [SerializeField] private float dropletSize = 0.1f;
+    [Tooltip("How long a droplet lingers as a stain after hitting a target.")]
+    [SerializeField] private float stainSeconds = 2f;
+
+    [Header("Drunk effects (bathroom)")]
+    [SerializeField] private float effectDuration = 4f;
+    [SerializeField] private float shakeAmplitude = 0.15f;
+
+    [Header("Rhythm scoring")]
+    [Tooltip("A new target is highlighted every this many droplets.")]
+    [SerializeField] private int windowSize = 25;
 
     [Header("Misc")]
     [SerializeField] private float countdownSeconds = 3f;
@@ -56,12 +73,32 @@ public class PeeMinigame : MonoBehaviour
     private Transform _peePoint;
     private float _floorY = -100f;
     private float _angle;
-    private int _remaining, _score, _goalLow, _goalHigh;
+    private int _remaining;
     private bool _firing, _spent, _ended;
     private float _fireAcc, _endTimer;
     private static Sprite _dropletSprite;
 
+    // ---- Rhythm scoring (highlight one target per window) ----
+    private int _score, _miss, _combo;
+    private int _highlightIndex;          // 1..3, the lit target
+    private int _dropletsThisWindow;
+    private bool _windowHit;              // did we hit the lit target this window?
+    private readonly SpriteRenderer[] _targets = new SpriteRenderer[4]; // [1..3]
+    private readonly Color[] _baseColors = new Color[4];
+
     private Text _info, _center;
+
+    private float _powerSeed;
+
+    // drunk effects
+    private int _drunk;
+    private Vector3 _camBase;
+    private float _shakeTimer;
+    private float _aimMult = 1f;
+    private bool _doubleVisionActive;
+    private string _effectName = "None";
+    private SpriteRenderer _playerRenderer;
+    private readonly List<SpriteRenderer> _targetRenderers = new List<SpriteRenderer>();
 
     private void Start()
     {
@@ -74,17 +111,28 @@ public class PeeMinigame : MonoBehaviour
     {
         if (_begun) return;
         _begun = true;
+        AudioManager.Instance?.StopMusic();   // corridor music off in the bathroom
         HideWalking(walkingPlayer);
         ResolveReferences();
         SetupTargets();
         FrameCamera();
         BuildUI();
 
-        _remaining = Mathf.Max(1, drunk * 25);     // total droplets (requirement 6)
-        GenerateGoalRange(_remaining);             // random reachable goal (requirement 5)
+        _drunk = drunk;
+        _remaining = Mathf.Max(1, drunk * 25);     // total droplets
         _angle = Mathf.Clamp(startAngle, aimMinAngle, aimMaxAngle);
+        _powerSeed = Random.value * 100f;
+
+        SetupPlayerMovement();
 
         StartCoroutine(Run());
+    }
+
+    private void SetupPlayerMovement()
+    {
+        // Player no longer moves; we only need its renderer for the Double Vision effect.
+        var p = FindLoose(playerName);
+        if (p != null) _playerRenderer = p.GetComponentInChildren<SpriteRenderer>();
     }
 
     // -------------------------------------------------------------------
@@ -146,29 +194,37 @@ public class PeeMinigame : MonoBehaviour
 
         foreach (Transform child in parent.transform)
         {
-            // target1/2/3 -> +1/+2/+3 ; floor / Wall / anything else -> -3
-            int pts = -3;
+            // target1/2/3 -> index 1/2/3 ; floor / Wall / anything else -> 0
+            int idx = 0;
             if (child.name.ToLower().Contains("target"))
                 foreach (char c in child.name)
-                    if (char.IsDigit(c)) { pts = c - '0'; break; }
+                    if (char.IsDigit(c)) { idx = c - '0'; break; }
 
             var col = child.GetComponent<Collider2D>();
             if (col == null)
             {
                 var box = child.gameObject.AddComponent<BoxCollider2D>();
                 box.isTrigger = true;
-                var sr = child.GetComponent<SpriteRenderer>();
-                if (sr != null && sr.sprite != null)
+                var sr2 = child.GetComponent<SpriteRenderer>();
+                if (sr2 != null && sr2.sprite != null)
                 {
-                    box.size = sr.sprite.bounds.size;
-                    box.offset = sr.sprite.bounds.center;
+                    box.size = sr2.sprite.bounds.size;
+                    box.offset = sr2.sprite.bounds.center;
                 }
                 col = box;
             }
             else col.isTrigger = true;
 
             var tag = child.GetComponent<PeeTargetTag>() ?? child.gameObject.AddComponent<PeeTargetTag>();
-            tag.points = pts;
+            tag.points = idx;   // now an index (1/2/3) or 0 for non-targets
+
+            var rend = child.GetComponent<SpriteRenderer>();
+            if (rend != null && idx >= 1 && idx <= 3)
+            {
+                _targetRenderers.Add(rend);     // Double Vision: real targets only
+                _targets[idx] = rend;           // for highlighting
+                _baseColors[idx] = rend.color;
+            }
         }
     }
 
@@ -186,13 +242,8 @@ public class PeeMinigame : MonoBehaviour
         cam.orthographic = true;
         Bounds b = sr.bounds;
         cam.orthographicSize = b.extents.y;
-        cam.transform.position = new Vector3(b.center.x, b.center.y, -10f);
-    }
-
-    private void GenerateGoalRange(int budget)
-    {
-        _goalLow = Mathf.RoundToInt(budget * Random.Range(0.45f, 0.6f));
-        _goalHigh = _goalLow + Mathf.RoundToInt(budget * Random.Range(0.3f, 0.5f));
+        _camBase = new Vector3(b.center.x, b.center.y, -10f);
+        cam.transform.position = _camBase;
     }
 
     // -------------------------------------------------------------------
@@ -208,6 +259,50 @@ public class PeeMinigame : MonoBehaviour
         }
         _center.text = "";
         _firing = true;
+        StartWindow();                       // light up the first target
+        AudioManager.Instance?.StartPee();   // looping pee sound
+        StartCoroutine(EffectLoop());        // drunk effects begin after the countdown
+    }
+
+    // -------------------------------------------------------------------
+    // Rhythm scoring: highlight one target per window of 'windowSize' droplets.
+    // -------------------------------------------------------------------
+    private void StartWindow()
+    {
+        _dropletsThisWindow = 0;
+        _windowHit = false;
+        SetHighlight(Random.Range(1, 4));    // 1..3
+    }
+
+    private void ResolveWindow()
+    {
+        if (_windowHit) _combo++;            // hit this window -> combo grows
+        else { _miss++; _combo = 0; }        // missed the window
+    }
+
+    private void SetHighlight(int index)
+    {
+        _highlightIndex = index;
+        for (int i = 1; i <= 3; i++)
+        {
+            if (_targets[i] == null) continue;
+            Color b = _baseColors[i];
+            _targets[i].color = (i == index)
+                ? b                                              // lit: full colour
+                : new Color(b.r * 0.4f, b.g * 0.4f, b.b * 0.4f, b.a); // dimmed
+        }
+    }
+
+    /// <summary>Called by a droplet when it lands on a target (index 1/2/3; 0 = floor/wall).</summary>
+    public void OnDropletHit(int index)
+    {
+        if (index < 1 || index > 3) return;             // floor / wall: nothing
+        AudioManager.Instance?.NoteHit(index - 1);      // do / re / mi
+        if (index == _highlightIndex && !_windowHit)
+        {
+            _windowHit = true;
+            _score++;                                   // scored this window
+        }
     }
 
     private void Update()
@@ -225,9 +320,11 @@ public class PeeMinigame : MonoBehaviour
             }
             if (_remaining <= 0)
             {
+                if (_dropletsThisWindow > 0) ResolveWindow();  // count the final partial window
                 _spent = true;
                 _firing = false;
                 _endTimer = particleLifetime + 0.3f;
+                AudioManager.Instance?.StopPee();
             }
         }
 
@@ -247,7 +344,7 @@ public class PeeMinigame : MonoBehaviour
         float d = 0f;
         if (kb.wKey.isPressed) d += 1f;
         if (kb.sKey.isPressed) d -= 1f;
-        _angle = Mathf.Clamp(_angle + d * aimSpeed * Time.deltaTime, aimMinAngle, aimMaxAngle);
+        _angle = Mathf.Clamp(_angle + d * aimSpeed * _aimMult * Time.deltaTime, aimMinAngle, aimMaxAngle);
     }
 
     private void FireOne()
@@ -266,27 +363,163 @@ public class PeeMinigame : MonoBehaviour
         sr.color = new Color(0.95f, 0.9f, 0.25f);
         sr.sortingOrder = 50;
 
+        Vector2 vel = dir * CurrentPower();
         var rb = go.AddComponent<Rigidbody2D>();
         rb.gravityScale = gravityScale;
-        rb.linearVelocity = dir * particleSpeed;
+        rb.linearVelocity = vel;
 
         var col = go.AddComponent<CircleCollider2D>();
         col.isTrigger = true;
         col.radius = 0.5f;
 
-        go.AddComponent<PeeParticle>().Init(this, particleLifetime, _floorY);
+        go.AddComponent<PeeParticle>().Init(this, particleLifetime, _floorY, true, stainSeconds);
+
+        // While Double Vision is active, spawn a translucent non-scoring twin droplet.
+        if (_doubleVisionActive) SpawnGhostDroplet(origin, vel);
+
+        // Advance the highlight window.
+        _dropletsThisWindow++;
+        if (_dropletsThisWindow >= windowSize) { ResolveWindow(); StartWindow(); }
     }
 
-    public void OnHit(int points) { _score += points; }
-    public void OnMiss() { _score -= 3; }
+    private void SpawnGhostDroplet(Vector3 origin, Vector2 velocity)
+    {
+        var go = new GameObject("PeeDropletGhost");
+        go.transform.position = origin + (Vector3)(RandomOffset() * 0.3f);
+        go.transform.localScale = Vector3.one * dropletSize;
+
+        var sr = go.AddComponent<SpriteRenderer>();
+        sr.sprite = GetDropletSprite();
+        sr.color = new Color(0.95f, 0.9f, 0.25f, 0.4f);
+        sr.sortingOrder = 49;
+
+        var rb = go.AddComponent<Rigidbody2D>();
+        rb.gravityScale = gravityScale;
+        rb.linearVelocity = velocity;
+
+        // Same collision behaviour as a real droplet (disappears on any target),
+        // but non-scoring so the twin doesn't change the score.
+        var col = go.AddComponent<CircleCollider2D>();
+        col.isTrigger = true;
+        col.radius = 0.5f;
+        go.AddComponent<PeeParticle>().Init(this, particleLifetime, _floorY, false);
+    }
 
     private void End()
     {
         _ended = true;
-        bool inRange = _score >= _goalLow && _score <= _goalHigh;
-        string verdict = inRange ? "You hit the goal range!" : "Outside the goal range.";
-        EndScreen.Show(
-            $"Score: {_score}\nGoal range: {_goalLow} - {_goalHigh}\n{verdict}\n\nHave a good night!");
+        // calculation = (score + miss score) / score, where miss score = -miss.
+        float calc = _score > 0 ? (float)(_score - _miss) / _score : 0f;
+        string verdict = calc >= 0.8f ? "Perfect Melody!"
+                       : calc >= 0.4f ? "You Made it!"
+                       :                "Such a Mess!!!";
+        if (calc >= 0.4f) AudioManager.Instance?.PlayWin();
+        else AudioManager.Instance?.PlayGameOver();
+        EndScreen.Show($"Score: {_score}\nMiss: {_miss}\n{verdict}\n\nHave a good night!");
+    }
+
+    // -------------------------------------------------------------------
+    // Randomly-drifting pee power (makes the player move to reach targets)
+    // -------------------------------------------------------------------
+    private float CurrentPower()
+    {
+        float n = Mathf.PerlinNoise(_powerSeed, Time.time * powerChangeSpeed);
+        return Mathf.Lerp(powerMin, powerMax, n);
+    }
+
+    // -------------------------------------------------------------------
+    // Drunk effects (Camera Shake / Slow / Double Vision)
+    //   Drunk 35-64: every 6s, 1 or 2 effects ;  Drunk 65+: every 5s, 2 effects
+    // -------------------------------------------------------------------
+    private IEnumerator EffectLoop()
+    {
+        while (!_ended)
+        {
+            int tier = _drunk >= 65 ? 3 : _drunk >= 35 ? 2 : 0;
+            if (tier == 0) { yield return new WaitForSeconds(0.5f); continue; }
+
+            float interval = tier == 3 ? 5f : 6f;
+            int count = tier == 3 ? 2 : Random.Range(1, 3);
+
+            yield return StartCoroutine(RunEffects(count));
+            yield return new WaitForSeconds(Mathf.Max(0f, interval - effectDuration));
+        }
+    }
+
+    private IEnumerator RunEffects(int count)
+    {
+        var pool = new List<int> { 0, 1, 2 };   // 0 shake, 1 slow, 2 double vision
+        var names = new List<string>();
+        count = Mathf.Clamp(count, 1, pool.Count);
+        for (int i = 0; i < count; i++)
+        {
+            int k = Random.Range(0, pool.Count);
+            ApplyEffect(pool[k], names);
+            pool.RemoveAt(k);
+        }
+        _effectName = string.Join(" + ", names);
+
+        yield return new WaitForSeconds(effectDuration);
+
+        ResetEffects();
+        _effectName = "None";
+    }
+
+    private void ApplyEffect(int e, List<string> names)
+    {
+        switch (e)
+        {
+            case 0: names.Add("Camera Shake"); _shakeTimer = effectDuration; break;
+            case 1: names.Add("Slow"); _aimMult = 0.5f; break;
+            case 2: names.Add("Double Vision"); SpawnDoubleVision(); _doubleVisionActive = true; break;
+        }
+    }
+
+    private void ResetEffects()
+    {
+        _shakeTimer = 0f;
+        _aimMult = 1f;
+        _doubleVisionActive = false;
+        var cam = Camera.main;
+        if (cam != null) cam.transform.position = _camBase;
+    }
+
+    // Double Vision affects: target1/2/3, PlayerPee, and the pee droplets.
+    private void SpawnDoubleVision()
+    {
+        // Targets (only the real targets - floor/Wall excluded).
+        foreach (var sr in _targetRenderers)
+            if (sr != null) DoubleVisionGhost.Spawn(sr, effectDuration, RandomOffset());
+
+        // The player.
+        if (_playerRenderer != null)
+            DoubleVisionGhost.Spawn(_playerRenderer, effectDuration, RandomOffset());
+
+        // Pee droplets currently in the air.
+        foreach (var p in FindObjectsByType<PeeParticle>(FindObjectsSortMode.None))
+        {
+            var sr = p.GetComponent<SpriteRenderer>();
+            if (sr != null) DoubleVisionGhost.Spawn(sr, effectDuration, RandomOffset());
+        }
+    }
+
+    private static Vector2 RandomOffset()
+    {
+        float sgn = Random.value < 0.5f ? -1f : 1f;
+        return new Vector2(Random.Range(0.4f, 0.8f) * sgn, Random.Range(0.2f, 0.5f));
+    }
+
+    private void LateUpdate()
+    {
+        if (_shakeTimer <= 0f) return;
+        _shakeTimer -= Time.deltaTime;
+        var cam = Camera.main;
+        if (cam == null) return;
+        float t = Time.time * 18f;
+        Vector3 off = new Vector3(Mathf.PerlinNoise(t, 0f) - 0.5f, Mathf.PerlinNoise(0f, t) - 0.5f, 0f)
+                      * (2f * shakeAmplitude);
+        cam.transform.position = _camBase + off;
+        if (_shakeTimer <= 0f) cam.transform.position = _camBase;
     }
 
     // -------------------------------------------------------------------
@@ -299,8 +532,14 @@ public class PeeMinigame : MonoBehaviour
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvasGo.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
 
-        _info = MakeText(canvasGo.transform, 22, TextAnchor.UpperLeft, Color.white,
-                         new Vector2(0f, 1f), new Vector2(16f, -16f), new Vector2(520f, 160f));
+        // Top-left: controls.
+        var controls = MakeText(canvasGo.transform, 22, TextAnchor.UpperLeft, Color.white,
+                                new Vector2(0f, 1f), new Vector2(16f, -16f), new Vector2(520f, 80f));
+        controls.text = "W/S: Change Angle";
+
+        // Top-right: stats.
+        _info = MakeText(canvasGo.transform, 22, TextAnchor.UpperRight, Color.white,
+                         new Vector2(1f, 1f), new Vector2(-16f, -16f), new Vector2(520f, 200f));
         _center = MakeText(canvasGo.transform, 90, TextAnchor.MiddleCenter, Color.white,
                            new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(400f, 300f));
         _center.text = "";
@@ -329,7 +568,10 @@ public class PeeMinigame : MonoBehaviour
     private void UpdateInfo()
     {
         if (_info == null) return;
-        _info.text = $"Pee left: {_remaining}\nScore: {_score}\nGoal: {_goalLow} - {_goalHigh}\nAngle: {Mathf.RoundToInt(_angle)}°";
+        string s = $"Score: {_score}\nMiss: {_miss}";
+        if (_combo >= 3) s += $"\nCombo x{_combo}";
+        s += $"\nAngle: {Mathf.RoundToInt(_angle)}°";
+        _info.text = s;
     }
 
     private static Sprite GetDropletSprite()

@@ -1,23 +1,27 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 /// <summary>
-/// Reusable full-screen end / message overlay: dark background, centered white text,
-/// and a Restart button that reloads the current scene.
-/// Call EndScreen.Show("...") from anywhere.
+/// Reusable full-screen end / message overlay: dark background, centered text, and a
+/// Restart button (or press R) that reloads the current scene.
+/// Call EndScreen.Show("..."). Works with the new Input System.
 /// </summary>
 public class EndScreen : MonoBehaviour
 {
     private static EndScreen _instance;
     private Text _text;
 
-    public static void Show(string message)
+    public static void Show(string message) => Show(message, Color.white);
+
+    public static void Show(string message, Color color)
     {
         EnsureInstance();
         _instance._text.text = message;
+        _instance._text.color = color;
         _instance.gameObject.SetActive(true);
+        Time.timeScale = 0f;   // freeze the game behind the screen
     }
 
     private static void EnsureInstance()
@@ -30,23 +34,13 @@ public class EndScreen : MonoBehaviour
 
     private void Build()
     {
-        // Make sure clicks work even if the scene has no EventSystem.
-        if (FindFirstObjectByType<EventSystem>() == null)
-        {
-            var es = new GameObject("EventSystem");
-            es.AddComponent<EventSystem>();
-            es.AddComponent<StandaloneInputModule>();
-        }
-
         var canvasGo = new GameObject("EndScreenCanvas");
         canvasGo.transform.SetParent(transform, false);
         var canvas = canvasGo.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 200;
         canvasGo.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        canvasGo.AddComponent<GraphicRaycaster>();
 
-        // Dark full-screen background.
         var bgGo = new GameObject("BG");
         bgGo.transform.SetParent(canvasGo.transform, false);
         var bg = bgGo.AddComponent<Image>();
@@ -55,32 +49,28 @@ public class EndScreen : MonoBehaviour
         bgRt.anchorMin = Vector2.zero; bgRt.anchorMax = Vector2.one;
         bgRt.offsetMin = Vector2.zero; bgRt.offsetMax = Vector2.zero;
 
-        // Centered message.
         _text = MakeText(canvasGo.transform, 34, new Vector2(0.5f, 0.5f),
-                         new Vector2(0f, 60f), new Vector2(1400f, 500f), Color.white);
+                         new Vector2(0f, 50f), new Vector2(1400f, 500f), Color.white);
 
-        // Restart button.
-        var btnGo = new GameObject("RestartButton");
-        btnGo.transform.SetParent(canvasGo.transform, false);
-        var btnImg = btnGo.AddComponent<Image>();
-        btnImg.color = new Color(0.25f, 0.55f, 0.95f);
-        var rt = btnImg.rectTransform;
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(260f, 80f);
-        rt.anchoredPosition = new Vector2(0f, -180f);
-        var btn = btnGo.AddComponent<Button>();
-        btn.targetGraphic = btnImg;
-        btn.onClick.AddListener(Restart);
+        // Restart hint (keyboard, since the project uses the new Input System).
+        var hint = MakeText(canvasGo.transform, 28, new Vector2(0.5f, 0.5f),
+                            new Vector2(0f, -170f), new Vector2(800f, 80f), new Color(0.6f, 0.85f, 1f));
+        hint.text = "Press R to Restart";
+    }
 
-        var label = MakeText(btnGo.transform, 28, new Vector2(0.5f, 0.5f),
-                             Vector2.zero, new Vector2(260f, 80f), Color.white);
-        label.text = "RESTART";
+    private void Update()
+    {
+        // Keyboard fallback so Restart always works even if a click is missed.
+        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+            Restart();
     }
 
     private void Restart()
     {
+        Debug.Log("[OneMoreSip] Restart -> reloading scene.");
         Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        GameSession.DrunkLevel = 0;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     private Text MakeText(Transform parent, int size, Vector2 anchorPivot, Vector2 pos,
